@@ -1,0 +1,199 @@
+Tee Command: 
+
+1. 
+tree -L 2 -d build/tmp
+
+Serial Command:
+sudo screen /dev/ttyUSB0 115200
+
+*******************
+Yocto:
+*******************
+BusyBox Location:
+build/tmp/work/i586-poky-linux/busybox-1.2-.2.r2/
+
+Busy-box Versoins:
+bitbake-layers show-recipes busy*
+
+Finding Source Directory:
+bitbake -e busybox | grep ^S=
+
+Clean up all the tasks state with regards to the given <recipe>
+bitbake -c cleanstate <recipe> 
+bitbake -e 	==> Displays the internal state of variables used by bitbake.
+
+Finding Work Directory: 
+bitbake -e busybox | grep ^WORKDIR=
+*************************************
+BusyBoX
+*************************************
+bitbake -c menuconfig busybox  
+bitbake busybox  
+bitbake fsl-image-fb
+
+
+********************************************************
+Dumping Bitbake Environment
+********************************************************
+********************************************************
+
+Dump the environment that bitbake uses for a terget:
+	$ bitbake -e <target>
+
+Expecially useful for finding some thing quckly,
+e.g  	Where is the source for a recipe?
+			$ bitbake -e <target> | grep ^S=
+e.g  	where is the working directory for a recipe?
+			$ bitbake -e <target> | grep ^WORKDIR=
+e.g		What iimage types are being built?
+			$ bitbake -e <image-target> | grep ^IMAGE_FSTYPES=
+
+What is recipe?
+Ans: Recipe is the direction which bitbake used to take a source/set of sources and output something.
+
+What are Packages?
+	-It can be a set of binary package, set of documentation.
+	-Output built from the instructions in  recipe.
+	-Mulitple packages can come from single recipe.
+	-The specific files included in each packages is controlled by the FILES_* variables.
+
+What are .bbappend files?
+	-Used to add customizations without completely over-riding a recipe.
+	-Used with Layers, this allows for a customization to track against an "upstream" recipe without  lot of overhead.
+	-At the core of how to use layers well.
+	-NOTE: As the name implies, these are generally additive.
+		--Subtractive operations are difficult technically, so overriding the recipe is the best recourse.
+
+How do I add my Application to an Image?
+	-First, Develop your application.	
+		-- different workflowa are possible.
+	-Create a Recipe
+		--Build on examples that are already in the layer.
+		--Have a look at the recipe skeleton scirpt.
+		-- Ask for help if get stuck.
+	-Add the recipe to a layer.
+	-Add the desired package to the image.
+	-Assuming you have a working recipe.
+	-Add new packages using the PACKAGES variable
+		-- PACKAGES=+"foo bar"
+	-Add files to each package.
+		--FILES_foo="${bindir}/foo_files"
+		--FILES_bar="${incdir}/bar_files"
+	-Don't forget to bump your PR value!.
+
+********************************************************
+Layers
+********************************************************
+********************************************************
+	-Layers are a way to manage extensions, and customizations to the system
+		--Layers can extend, add, replace or modify recipes.
+		--Layers can add or replace bbclass files.
+		--Layers can add or modify configuration settings.
+		--Layers are added via BBLAYERS variable in "build/conf/bblayers.conf"
+	-Best Practice: Layers should be grouped by functionality.
+		-- Custom toolchains (compilers, debugger, profiling tools).
+		--Distribution specifications (i.e meta-yocto)
+		--BSP/Machine settings(i.e meta-yocto-bsp)
+		--Functional Areas (selinux, networkin, etc.)
+		--Project specific changes.
+
+
+************************
+CONFIGURATIONS
+************************
+#Configuration:
+	-meta/conf/bitbake.conf							(default)
+	-build/conf/bblayers.conf						(Layers)
+	-*/conf/layers.conf								(one per layer)
+	-build/conf/local.conf							(Local user-defined)
+	-meta-yocto/conf/distro/poky.conf				(distribution policy)
+	-meta-yocto-bsp/conf/machine/<board-name>.conf 	(BSP)
+	-meta/conf/machine/include/tune-conrexa8.inc 	(CPU)
+	-Recipes										(metadata)	
+
+*****************
+Recipes
+*****************
+	-Build instructions
+		--Recipes for building packages
+		--Recipe files
+			---meta/recipes-core/busybox-1.20.2.bb
+	-Patches and supplemental Files.
+		--Location
+			---meta/recipes-core/busybox//busybox-1.20.2
+	-Recipes inherit the system configuration and adjust to described how to build and packages the software.
+	-recipes can be extended and enhanced through append0files from other layers.
+	-Yocto Project and open Embedded recipes structures are compatible to each other.
+
+******************************
+Machine Configurations
+******************************
+	-Configuration files that describe a machine 
+		--Define board specific kernel configuration
+		--formfactor Configurations 
+		--Processor/SOC Tuning Files.
+	-Hardware machines and emulated machines (QEMU).
+	-E.g.	meta-yocto-bsp/conf/machine/<xyz_board.conf>
+	-Machines configuration refers to kernel sources and may influence some userspace software.
+	-Compatible with OpenEmbedded.
+
+******************************
+Distribution Policy
+******************************
+	-Defiens distribution/system wide policies that affect the way individual recipes are built.
+		--May set alternative preferred viersions of recipes.
+		--May enable/disable LIBC functionality(i.e il8n)
+		--May enable/disable features (i.e pam,selinxu)
+		--May configure seicific package rules.
+		--May adjust image deployment settings.
+	-Enable via the DISTRO setting
+	-Four predefined settings.
+		-poky-bleeding: 	Enables a bleeding edge packages.
+		-poky: 				Core distribution definition, defines the base.
+		-poky-lsb:			Enable items required for LSB support.
+		-poky-tiny:			Cunstruct a smaller then normal system.
+
+*****************************
+SDK Generation 
+*****************************
+	-A specific SDK recipe may be created. This allows someon to build 
+		an SDK with specific interface in it. (i.e: meta-toolchain-gmae)
+	-SDK may be based on the contents of the image generation.
+	-SDK contains native applications, Cross toolchain and Installation Scripts.
+	-May be used by the Eclipse Application Developer Tool to Enable App Developers.
+	-May Contain an QUMU target emulation to assist app development.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
